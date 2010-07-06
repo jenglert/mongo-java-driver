@@ -86,6 +86,7 @@ public class DBPort {
             close();
             throw ioe;
         }
+        
     }
 
     synchronized CommandResult getLastError( DB db ){
@@ -180,7 +181,7 @@ public class DBPort {
         close();
     }
 
-    protected void close(){
+	protected void close(){
         if ( _socket == null )
             return;
         
@@ -188,7 +189,7 @@ public class DBPort {
             _socket.close();
         }
         catch ( Exception e ){
-            // don't care
+        	// Do nothing
         }
         
         _in = null;

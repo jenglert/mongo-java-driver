@@ -79,7 +79,7 @@ public class ServerAddress {
     // pairing
     // --------
 
-    /** Determines if the database at this address is paired.
+	/** Determines if the database at this address is paired.
      * @return if this address connects to a set of paired databases
      */
     boolean isPaired(){

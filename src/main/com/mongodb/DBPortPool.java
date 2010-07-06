@@ -165,6 +165,14 @@ class DBPortPool extends SimplePool<DBPort> {
             // we don't want to clear the port pool for 1 connection timing out
             return;
         }
+        
+        // We don't want to clear the entire pool for the occasional error.
+        if ( e instanceof SocketException) {
+        	if (recentFailures < ALLOWED_ERRORS_BEFORE_CLEAR) {
+        		return;
+        	}
+        }
+        
         Bytes.LOGGER.log( Level.INFO , "emptying DBPortPool b/c of error" , e );
         clear();
     }
@@ -190,9 +198,35 @@ class DBPortPool extends SimplePool<DBPort> {
             throw new MongoInternalException( "can't create port to:" + _addr , ioe );
         }
     }
+    
+
+	public int getRecentFailures() {
+		return recentFailures;
+	}
+
+	public void incrementRecentFailures() {
+		_logger.warning("Failure recorded:" + _addr.toString());
+		this.recentFailures++;
+	}
+	
+	public void resetRecentFailures() {
+		if (this.recentFailures > 0) {
+			_logger.warning("Successful Request. Reseting recent failures:" + _addr.toString());
+		}
+		
+		this.recentFailures = 0;
+	}
 
     final MongoOptions _options;
     final private Semaphore _waitingSem;
     final InetSocketAddress _addr;
     boolean _everWorked = false;
+    public final static Integer ALLOWED_ERRORS_BEFORE_CLEAR = Integer.valueOf(System.getProperty("MONGO.ERRORS_BEFORE_CLEAR", "5"));
+    private Logger _logger = Logger.getLogger( DBPortPool.class.toString() );
+
+    /**
+     * The number of failures that this port pool has recently experienced.
+     */
+    private int recentFailures = 0;
+
 }
